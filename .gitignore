@@ -1,4 +1,5 @@
-provagll-firebase-adminsdk-fbsvc-8ae5859b70.json
+# Firebase service account (NEVER commit credentials)
+*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
