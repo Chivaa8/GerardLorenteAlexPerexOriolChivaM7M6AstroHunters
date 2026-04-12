@@ -1,4 +1,3 @@
-from typing import Union
 import strawberry
 
 from app.firebase_conf import db
@@ -21,10 +20,21 @@ class JugadorsMutation:
             raise Exception("Operació rebutjada: sessió no autenticada.")
 
         uid = usuario.get("uid")
-
         datos_dict = strawberry.asdict(datos)
 
-        db.collection("jugadors").document(uid).set({
+        doc_ref = db.collection("jugadors").document(uid)
+        doc = doc_ref.get()
+
+        if doc.exists:
+            data = doc.to_dict()
+            return Jugador(
+                id=uid,
+                nickname=data["nickname"],
+                nivell=data["nivell"],
+                banejat=data["banejat"]
+            )
+
+        doc_ref.set({
             "nickname": datos_dict["nickname"],
             "nivell": 1,
             "banejat": False
@@ -39,12 +49,12 @@ class JugadorsMutation:
 
     @strawberry.mutation
     def atorgar_item(self, datos: AtorgarItemInput) -> Item:
-        doc_ref = (
-            db.collection("jugadors")
-            .document(datos.jugador_id)
-            .collection("inventari")
-            .document()
-        )
+        jugador_ref = db.collection("jugadors").document(datos.jugador_id)
+
+        if not jugador_ref.get().exists:
+            raise Exception("Operació rebutjada: el jugador no existeix.")
+
+        doc_ref = jugador_ref.collection("inventari").document()
 
         doc_ref.set({
             "nom_item": datos.nom_item,

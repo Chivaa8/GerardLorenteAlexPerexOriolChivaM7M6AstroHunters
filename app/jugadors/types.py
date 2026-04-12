@@ -5,7 +5,7 @@ from app.firebase_conf import db
 @strawberry.type
 class Item:
     id: str
-    nom: str
+    nom_item: str
     raresa: str 
 
 @strawberry.type
