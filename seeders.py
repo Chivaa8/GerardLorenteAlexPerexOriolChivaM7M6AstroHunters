@@ -50,7 +50,7 @@ def inicialitzar_db():
         doc_ref = db.collection("jugadors").document(jugador_id)
         doc_ref.set(jugador)
 
-        print(f"Jugador creat: {jugador['nickname']}")
+        print(f"👤 Jugador creat: {jugador['nickname']}")
 
         #inventario
         for item in inventari:
@@ -64,15 +64,13 @@ def inicialitzar_db():
         partida["data_cració"] = datetime.utcnow().isoformat()
         doc_ref.set(partida)
 
-        print(f"Partida creada: {partida['mapa']}")
+        print(f"🎮 Partida creada: {partida['mapa']}")
 
         #punts
         for puntuacio in puntuacions:
             doc_ref.collection("puntacions").document().set(puntuacio)
 
-    print("Base de dades inicialitzada correctamente")
+    print("🎉 Base de dades inicialitzada correctamente!")
 
 if __name__ == "__main__":
     inicialitzar_db()
-
-
