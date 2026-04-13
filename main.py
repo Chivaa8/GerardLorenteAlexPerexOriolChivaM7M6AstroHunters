@@ -1,9 +1,24 @@
 import os
-from fastapi import FastAPI
+from typing import Optional, Dict, Any
+
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from strawberry.fastapi import GraphQLRouter
+
+from strawberry.fastapi import GraphQLRouter, BaseContext
 from app.firebase_conf import db
 from app.schema import schema
+from app.auth import obtener_usuario_actual
+from app.loaders.jugadors_loader import get_player_loader
+
+class ContextoGraphQL(BaseContext):
+   def __init__(self, usuario: Optional[Dict[str, Any]]):
+       self.usuario = usuario
+       self.player_loader = get_player_loader()
+
+async def get_context(
+        usuario: Optional[Dict[str, Any]] = Depends(obtener_usuario_actual)
+):
+    return ContextoGraphQL(usuario=usuario) 
 
 # Crear aplicación FastAPI
 app = FastAPI(
@@ -24,11 +39,11 @@ app.add_middleware(
 # Crear router GraphQL
 graphql_router = GraphQLRouter(
     schema,
-    path="/graphql",
+    context_getter=get_context
 )
 
 # Incluir router GraphQL
-app.include_router(graphql_router)
+app.include_router(graphql_router, prefix="/graphql")
 
 # Endpoint de verificación de estado (health check)
 @app.get("/health")
