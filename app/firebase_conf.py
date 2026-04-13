@@ -29,3 +29,5 @@ def get_firestore_client():
 
 # Initialize on module import
 db = get_firestore_client()
+
+
