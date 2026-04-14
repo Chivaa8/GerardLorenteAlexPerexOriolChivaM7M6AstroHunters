@@ -9,11 +9,13 @@ from app.firebase_conf import db
 from app.schema import schema
 from app.auth import obtener_usuario_actual
 from app.loaders.jugadors_loader import get_player_loader
+from app.loaders.partides_loader import get_partida_loader
 
 class ContextoGraphQL(BaseContext):
-   def __init__(self, usuario: Optional[Dict[str, Any]]):
-       self.usuario = usuario
-       self.player_loader = get_player_loader()
+    def __init__(self, usuario: Optional[Dict[str, Any]]):
+        self.usuario = usuario
+        self.player_loader = get_player_loader()
+        self.partida_loader = get_partida_loader()
 
 async def get_context(
         usuario: Optional[Dict[str, Any]] = Depends(obtener_usuario_actual)

@@ -1,6 +1,11 @@
 import strawberry
-from typing import List
+from typing import List, TYPE_CHECKING
 from app.firebase_conf import db
+
+if TYPE_CHECKING:
+    from app.partides.types import Partida as PartidaType
+else:
+    PartidaType = strawberry.LazyType("Partida", "app.partides.types")
 
 
 @strawberry.type
@@ -27,6 +32,44 @@ class Jugador:
             llista_items.append(Item(id=doc.id, **datos))
 
         return llista_items
+
+    @strawberry.field
+    def partides(self) -> List[PartidaType]:
+        # Lookup every score row for this player, then load distinct matches.
+        puntuacions = (
+            db.collection_group("puntuacions")
+            .where("jugador_id", "==", self.id)
+            .stream()
+        )
+
+        ids_partida = set()
+        for doc in puntuacions:
+            parent = doc.reference.parent.parent
+            if parent is not None:
+                ids_partida.add(parent.id)
+
+        if not ids_partida:
+            return []
+
+        from app.partides.types import Partida
+
+        partides = []
+        for id_partida in ids_partida:
+            partida_doc = db.collection("partides").document(id_partida).get()
+            if not partida_doc.exists:
+                continue
+
+            dades = partida_doc.to_dict() or {}
+            partides.append(
+                Partida(
+                    id=partida_doc.id,
+                    mapa=dades.get("mapa", ""),
+                    estat=dades.get("estat", "En curs"),
+                    data_creacio=str(dades.get("data_creacio", "")),
+                )
+            )
+
+        return partides
 
 
 @strawberry.input

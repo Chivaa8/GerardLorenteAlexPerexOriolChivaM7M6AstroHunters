@@ -1,12 +1,12 @@
 import strawberry
-from typing import Annotated, List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 from app.firebase_conf import db
 
 if TYPE_CHECKING:
-    from app.jugadors.types import Jugador
-
-JugadorType = Annotated["Jugador", strawberry.lazy("app.jugadors.types")]
+    from app.jugadors.types import Jugador as JugadorType
+else:
+    JugadorType = strawberry.LazyType("Jugador", "app.jugadors.types")
 
 
 @strawberry.type
