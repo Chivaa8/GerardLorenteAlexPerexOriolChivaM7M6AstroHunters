@@ -61,14 +61,19 @@ def inicialitzar_db():
         puntuacions = partida.pop("puntuacions")
 
         doc_ref = db.collection("partides").document()
-        partida["data_cració"] = datetime.utcnow().isoformat()
+        partida["data_creacio"] = datetime.utcnow().isoformat()
         doc_ref.set(partida)
+        partida_id = doc_ref.id
 
         print(f"🎮 Partida creada: {partida['mapa']}")
 
         #punts
         for puntuacio in puntuacions:
-            doc_ref.collection("puntacions").document().set(puntuacio)
+            doc_ref.collection("puntuacions").document().set(puntuacio)
+            
+            # Add partida reference to jugador's subcollection
+            jugador_id = puntuacio["jugador_id"]
+            db.collection("jugadors").document(jugador_id).collection("partides").document(partida_id).set({})
 
     print("🎉 Base de dades inicialitzada correctamente!")
 

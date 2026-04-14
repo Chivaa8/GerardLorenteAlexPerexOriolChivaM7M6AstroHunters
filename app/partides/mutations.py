@@ -9,7 +9,7 @@ from app.partides.types import Partida, RegistrarPuntuacioInput
 class PartidesMutation:
 	@strawberry.mutation
 	def registrar_puntuacio(self, dades: RegistrarPuntuacioInput) -> Partida:
-		partida_ref = db.collection("partides").document(dades.partida_id)
+		partida_ref = db.collection("partides").document(dades.id_partida)
 		doc = partida_ref.get()
 		if not doc.exists:
 			raise Exception("La partida no existeix")
@@ -21,6 +21,8 @@ class PartidesMutation:
 				"baixes": dades.baixes,
 			}
 		)
+
+		db.collection("jugadors").document(dades.jugador_id).collection("partides").document(dades.id_partida).set({})
 
 		data = doc.to_dict() or {}
 		return Partida(id=doc.id, mapa=data.get("mapa", ""), estat=data.get("estat", "En curs"), data_creacio=data.get("data_creacio"))

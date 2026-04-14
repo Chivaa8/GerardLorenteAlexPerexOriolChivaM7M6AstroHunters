@@ -55,7 +55,7 @@ mutation AtorgarItem {
 mutation RegistrarPuntuacio {
   registrarPuntuacio(
     dades: {
-      partidaId: "PARTIDA_ID_AQUI"
+      idPartida: "PARTIDA_ID_AQUI"
       jugadorId: "jugador_1"
       punts: 2500
       baixes: 10

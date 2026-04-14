@@ -35,27 +35,19 @@ class Jugador:
 
     @strawberry.field
     def partides(self) -> List[PartidaType]:
-        # Lookup every score row for this player, then load distinct matches.
-        puntuacions = (
-            db.collection_group("puntuacions")
-            .where("jugador_id", "==", self.id)
+        docs = (
+            db.collection("jugadors")
+            .document(self.id)
+            .collection("partides")
             .stream()
         )
-
-        ids_partida = set()
-        for doc in puntuacions:
-            parent = doc.reference.parent.parent
-            if parent is not None:
-                ids_partida.add(parent.id)
-
-        if not ids_partida:
-            return []
 
         from app.partides.types import Partida
 
         partides = []
-        for id_partida in ids_partida:
-            partida_doc = db.collection("partides").document(id_partida).get()
+        for doc in docs:
+            partida_id = doc.id
+            partida_doc = db.collection("partides").document(partida_id).get()
             if not partida_doc.exists:
                 continue
 
