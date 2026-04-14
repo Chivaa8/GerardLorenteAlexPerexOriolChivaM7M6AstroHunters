@@ -1,14 +1,15 @@
 import strawberry
+from typing import Annotated, TypeAlias, Union
 
 from app.firebase_conf import db
 from app.jugadors.types import Jugador, RegistrarJugadorInput, Item, AtorgarItemInput
 from app.errors.types import ErrorNoAutoritzat, ErrorJugadorBanejat
 
 
-PujarNivellResult = strawberry.union(
-    "PujarNivellResult",
-    (Jugador, ErrorNoAutoritzat, ErrorJugadorBanejat)
-)
+PujarNivellResult: TypeAlias = Annotated[
+    Union[Jugador, ErrorNoAutoritzat, ErrorJugadorBanejat],
+    strawberry.union("PujarNivellResult"),
+]
 
 
 @strawberry.type
