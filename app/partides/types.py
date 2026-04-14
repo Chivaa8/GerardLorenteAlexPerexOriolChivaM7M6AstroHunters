@@ -1,57 +1,48 @@
-from typing import List, Optional
 import strawberry
+from typing import List, Optional
 
 from app.firebase_conf import db
-from app.partides.types import Partida, Puntuacio
+
+JugadorType = strawberry.LazyType["Jugador", "app.jugadors.types"] #funciona aunque diga que no reconoce app ni jugador
 
 
 @strawberry.type
-class PartidesQuery:
+class Puntuacio:
+    id: str
+    jugador_id: str
+    punts: int
+    baixes: int
 
     @strawberry.field
-    def llistar_partides(
-        self,
-        estat: Optional[str] = None,
-        limit: int = 10,
-        offset: int = 0
-    ) -> List[Partida]:
-        docs = db.collection("partides").stream()
+    async def jugador(self, info: strawberry.Info) -> Optional[JugadorType]:
+        dades_jugador = await info.context.player_loader.load(self.jugador_id)
 
-        llista_partides = []
-        for doc in docs:
-            dades = doc.to_dict()
+        if not dades_jugador:
+            return None
 
-            if estat is not None and dades.get("estat") != estat:
-                continue
+        from app.jugadors.types import Jugador
 
-            llista_partides.append(
-                Partida(
-                    id=doc.id,
-                    mapa=dades["mapa"],
-                    estat=dades["estat"],
-                    data_creacio=str(dades["data_creacio"])
-                )
-            )
+        return Jugador(
+            id=self.jugador_id,
+            nickname=dades_jugador["nickname"],
+            nivell=dades_jugador["nivell"],
+            banejat=dades_jugador["banejat"]
+        )
 
-        return llista_partides[offset: offset + limit]
+
+@strawberry.type
+class Partida:
+    id: str
+    mapa: str
+    estat: str
+    data_creacio: str
 
     @strawberry.field
-    def taula_classificacio(self, id_partida: str) -> List[Puntuacio]:
-        partida_ref = db.collection("partides").document(id_partida)
-        partida_doc = partida_ref.get()
-
-        if not partida_doc.exists:
-            return []
-
-        dades_partida = partida_doc.to_dict()
-
-        if dades_partida.get("estat") != "Finalitzada":
-            return []
-
+    def puntuacions(self) -> List[Puntuacio]:
         docs = (
-            partida_ref
+            db.collection("partides")
+            .document(self.id)
             .collection("puntuacions")
-            .order_by("punts", direction="DESCENDING")
             .stream()
         )
 
@@ -68,3 +59,16 @@ class PartidesQuery:
             )
 
         return resultat
+
+
+@strawberry.input
+class CrearPartidaInput:
+    mapa: str
+
+
+@strawberry.input
+class RegistrarPuntuacioInput:
+    id_partida: str
+    jugador_id: str
+    punts: int
+    baixes: int
