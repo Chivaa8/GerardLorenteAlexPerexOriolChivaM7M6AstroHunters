@@ -29,5 +29,3 @@ class JugadorsQuery:
             resultat.append(Jugador(id=doc.id, **datos))
 
         return resultat
-    
-    

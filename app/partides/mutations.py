@@ -3,6 +3,7 @@ import strawberry
 from app.errors.types import ErrorPartidaNoTrobada
 from app.firebase_conf import db
 from app.partides.types import Partida, RegistrarPuntuacioInput
+from datetime import datetime
 
 
 @strawberry.type
@@ -39,3 +40,22 @@ class PartidesMutation:
 		data = doc.to_dict() or {}
 		data["estat"] = "Finalitzada"
 		return Partida(id=doc.id, mapa=data.get("mapa", ""), estat=data["estat"], data_creacio=data.get("data_creacio"))
+
+	@strawberry.mutation
+	def crear_partida(self, mapa: str) -> Partida:
+		partida_ref = db.collection("partides").document()
+		partida_data = {
+			"mapa": mapa,
+			"estat": "En curs",
+			"data_creacio": datetime.now().isoformat()
+		}
+
+		partida_ref.set(partida_data)
+
+		return Partida(
+			id=partida_ref.id,
+			mapa=mapa,
+			estat="En curs",
+			data_creacio=partida_data["data_creacio"]
+		)
+
