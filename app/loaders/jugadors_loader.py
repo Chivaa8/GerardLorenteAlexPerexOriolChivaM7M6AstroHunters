@@ -7,23 +7,24 @@ from app.jugadors.types import Jugador
 
 
 async def _load_players(player_ids: List[str]) -> List[Optional[Jugador]]:
-	players_by_id = {}
+    referencias = [db.collection("jugadors").document(player_id) for player_id in player_ids]
+    docs = db.get_all(referencias)
 
-	for player_id in player_ids:
-		doc = db.collection("jugadors").document(player_id).get()
-		if not doc.exists:
-			players_by_id[player_id] = None
-			continue
+    players_by_id = {}
+    for doc in docs:
+        if not doc.exists:
+            players_by_id[doc.id] = None
+            continue
 
-		data = doc.to_dict() or {}
-		players_by_id[player_id] = Jugador(
-			id=doc.id,
-			nickname=data.get("nickname", ""),
-			nivell=data.get("nivell", 1),
-			banejat=data.get("banejat", False),
-		)
+        data = doc.to_dict() or {}
+        players_by_id[doc.id] = Jugador(
+            id=doc.id,
+            nickname=data.get("nickname", ""),
+            nivell=data.get("nivell", 1),
+            banejat=data.get("banejat", False),
+        )
 
-	return [players_by_id.get(player_id) for player_id in player_ids]
+    return [players_by_id.get(player_id) for player_id in player_ids]
 
 
 def get_player_loader() -> DataLoader[str, Optional[Jugador]]:

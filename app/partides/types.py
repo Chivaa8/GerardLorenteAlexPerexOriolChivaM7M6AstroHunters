@@ -18,19 +18,7 @@ class Puntuacio:
 
     @strawberry.field
     async def jugador(self, info: strawberry.Info) -> Optional[JugadorType]:
-        dades_jugador = await info.context.player_loader.load(self.jugador_id)
-
-        if not dades_jugador:
-            return None
-
-        from app.jugadors.types import Jugador
-
-        return Jugador(
-            id=self.jugador_id,
-            nickname=dades_jugador["nickname"],
-            nivell=dades_jugador["nivell"],
-            banejat=dades_jugador["banejat"]
-        )
+        return await info.context.player_loader.load(self.jugador_id)
 
 
 @strawberry.type

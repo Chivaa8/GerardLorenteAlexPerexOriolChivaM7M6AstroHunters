@@ -74,3 +74,16 @@ class AtorgarItemInput:
     jugador_id: str
     nom_item: str
     raresa: str
+    
+
+@strawberry.type
+class ErrorNoAutoritzat:
+    message: str
+
+@strawberry.type
+class ErrorJugadorNoTrobat:
+    message: str
+
+@strawberry.type
+class ErrorJugadorBanejat:
+    message: str
